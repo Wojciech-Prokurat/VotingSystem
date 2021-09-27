@@ -12,26 +12,21 @@ using static Xunit.Assert;
 
 namespace VotingSystem.Tests
 {
-    public class CounterTests
+    public class CounterManagerTests
     {
         public const string CounterName = "Counter Name";
         public Counter _counter = new Counter {Name = CounterName, Count = 5 };
 
         [Fact]
-        public void HasName()
-        {
-            Equal(CounterName, _counter.Name);
-        }
-        [Fact]
         public void GetCounterStatistics_IncludesCounterName()
         {
-            var statistics = _counter.GetStatistics(5);
+            var statistics = new CounterManager().GetStatistics(_counter,5);
             Equal(CounterName, statistics.Name);
         }
         [Fact]
         public void GetCounterStatistics_IncludesCounterCount()
         {
-            var statistics = _counter.GetStatistics(5);
+            var statistics = new CounterManager().GetStatistics(_counter, 5);
             Equal(5, statistics.Count);
         }
         [Theory]
@@ -42,7 +37,7 @@ namespace VotingSystem.Tests
         {
             _counter.Count = count;
 
-            var statistics = _counter.GetStatistics(total);
+            var statistics = new CounterManager().GetStatistics(_counter, total);
 
             Equal(expected, statistics.Percent);
         }
@@ -117,15 +112,16 @@ namespace VotingSystem.Tests
         public int Count { get; set; }
         public double Percent { get; set; }
 
-        internal Counter GetStatistics(int totalCount)
-        {
-            Percent = Math.Round(Count * 100.0 / totalCount,2);
-            return this;
-        }
+       
     }
 
     public class CounterManager
     {
+        public Counter GetStatistics(Counter counter, int totalCount)
+        {
+            counter.Percent = RoundUp(counter.Count * 100.0 / totalCount);
+            return counter;
+        }
         public void ResolveExcess(List<Counter> counters)
         {
             var totalPercent = counters.Sum(x => x.Percent);
@@ -147,6 +143,6 @@ namespace VotingSystem.Tests
             }
         }
 
-         public static double RoundUp(double num) => Math.Round(num,2);
+         private static double RoundUp(double num) => Math.Round(num,2);
     }
 }
